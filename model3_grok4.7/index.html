@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Four-city retail performance · Q1 2026</title>
+  <meta name="description" content="Executive dashboard of recognised revenue, gross profit and order leakage for a Kenyan retail company in the first quarter of 2026.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Schibsted+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=3">
+  <script>
+    (function () {
+      try {
+        var stored = localStorage.getItem("retail-close-theme");
+        var theme = stored || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+        document.documentElement.setAttribute("data-theme", theme);
+      } catch (error) {
+        document.documentElement.setAttribute("data-theme", "light");
+      }
+    })();
+  </script>
+</head>
+<body>
+  <div class="wrap">
+    <header class="site-header">
+      <div>
+        <p class="eyebrow">Kenyan retail · four cities</p>
+        <h1>Four-city retail performance</h1>
+        <p class="lede">Recognised revenue, gross profit and the orders that never became sales. Nairobi, Mombasa, Kisumu and Nakuru, from the 24-order file for the first quarter of 2026.</p>
+      </div>
+      <div class="header-meta">
+        <p>Reporting period <strong><time datetime="2026-01-05">5 Jan 2026</time> – <time datetime="2026-03-25">25 Mar 2026</time></strong></p>
+        <p>Last updated <time datetime="2026-11-09">9 Nov 2026</time></p>
+        <button type="button" class="btn" id="theme-toggle" aria-pressed="false">Use dark mode</button>
+      </div>
+    </header>
+
+    <nav class="toc" aria-label="Dashboard sections">
+      <a href="#key-figures">Key figures</a>
+      <a href="#revenue">Revenue</a>
+      <a href="#performance">Performance</a>
+      <a href="#insights">Insights</a>
+      <a href="#actions">Actions</a>
+      <a href="#ledger">Ledger</a>
+    </nav>
+
+    <p id="check-banner" class="banner" role="alert" hidden>
+      The unfiltered totals do not match the audited control figures: revenue KES 1,558,000, cost KES 1,064,000, gross profit KES 494,000, 50 units, 21 completed orders, 2 returns and 1 cancellation. Do not use this page until the data is checked.
+    </p>
+
+    <section class="recognition" aria-label="Recognition rule">
+      <p>Revenue, cost and profit count completed orders only. A returned or cancelled order stays out of those figures. Its list value is shown apart, not netted into the cards.</p>
+      <p class="excluded">
+        <span id="excluded-label">Excluded list value</span>
+        <strong id="excluded-value">—</strong>
+        <span id="excluded-detail"></span>
+      </p>
+    </section>
+
+    <form class="card filters" id="filters" aria-label="Filter the book">
+      <div class="filter-row">
+        <fieldset>
+          <legend>Month</legend>
+          <div class="chips" id="month-filters">
+            <button type="button" class="chip" data-month="all" aria-pressed="true">All months</button>
+            <button type="button" class="chip" data-month="2026-01" aria-pressed="false">January</button>
+            <button type="button" class="chip" data-month="2026-02" aria-pressed="false">February</button>
+            <button type="button" class="chip" data-month="2026-03" aria-pressed="false">March</button>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>Region</legend>
+          <div class="chips" id="region-filters">
+            <button type="button" class="chip" data-region="all" aria-pressed="true">All regions</button>
+            <button type="button" class="chip" data-region="Nairobi" aria-pressed="false">Nairobi</button>
+            <button type="button" class="chip" data-region="Mombasa" aria-pressed="false">Mombasa</button>
+            <button type="button" class="chip" data-region="Kisumu" aria-pressed="false">Kisumu</button>
+            <button type="button" class="chip" data-region="Nakuru" aria-pressed="false">Nakuru</button>
+          </div>
+        </fieldset>
+      </div>
+      <div class="filter-row">
+        <fieldset>
+          <legend>Category</legend>
+          <select id="category-filter">
+            <option value="all">All categories</option>
+            <option value="Electronics">Electronics</option>
+            <option value="Furniture">Furniture</option>
+          </select>
+        </fieldset>
+        <fieldset>
+          <legend>Product</legend>
+          <select id="product-filter"></select>
+        </fieldset>
+        <button type="button" class="btn" id="reset-filters">Reset filters</button>
+      </div>
+      <p class="note">Filters combine. A January and Nairobi selection is the overlap, not two separate views. Revenue figures still use completed orders only.</p>
+    </form>
+
+    <p id="view-summary" class="view-summary" aria-live="polite"></p>
+    <p id="empty-note" class="empty-note" hidden>No orders match these filters. Reset filters to return to the full quarter.</p>
+    <p id="completed-note" class="empty-note" hidden></p>
+
+    <section id="key-figures" aria-labelledby="key-figures-title">
+      <div class="section-head">
+        <h2 id="key-figures-title">Key figures</h2>
+        <p>Calculated from the orders currently in view. Nothing here is a comparison with last year.</p>
+      </div>
+      <ul class="kpis">
+        <li class="kpi">
+          <p class="kpi-label">Total revenue</p>
+          <p class="kpi-value" id="kpi-revenue">—</p>
+          <p class="kpi-note" id="kpi-revenue-note"></p>
+        </li>
+        <li class="kpi profit">
+          <p class="kpi-label">Gross profit</p>
+          <p class="kpi-value" id="kpi-profit">—</p>
+          <p class="kpi-note" id="kpi-profit-note"></p>
+        </li>
+        <li class="kpi margin">
+          <p class="kpi-label">Gross profit margin</p>
+          <p class="kpi-value" id="kpi-margin">—</p>
+          <p class="kpi-note" id="kpi-margin-note"></p>
+        </li>
+        <li class="kpi orders">
+          <p class="kpi-label">Total orders</p>
+          <p class="kpi-value" id="kpi-orders">—</p>
+          <p class="kpi-note" id="kpi-orders-note"></p>
+        </li>
+        <li class="kpi units">
+          <p class="kpi-label">Units sold</p>
+          <p class="kpi-value" id="kpi-units">—</p>
+          <p class="kpi-note" id="kpi-units-note"></p>
+        </li>
+        <li class="kpi aov">
+          <p class="kpi-label">Average order value</p>
+          <p class="kpi-value" id="kpi-aov">—</p>
+          <p class="kpi-note" id="kpi-aov-note"></p>
+        </li>
+      </ul>
+      <details class="definitions">
+        <summary>How these figures are defined</summary>
+        <ul>
+          <li>Recognised revenue is units × unit price on completed orders.</li>
+          <li>Cost of goods sold is units × unit cost on completed orders.</li>
+          <li>Gross profit is recognised revenue minus that cost. It is not operating profit.</li>
+          <li>Gross margin is gross profit divided by recognised revenue.</li>
+          <li>Total orders counts every status in the current view. Units sold and average order value use completed orders only.</li>
+          <li>Average order value is recognised revenue divided by the number of completed orders.</li>
+          <li>Return rate is returned orders divided by completed plus returned orders. Cancelled orders are not treated as returns.</li>
+          <li>Amounts are shown as Kenyan shillings. The file has no currency field. KES is an assumption, stated because the company operates in Kenya and the price levels match shilling retail prices.</li>
+        </ul>
+      </details>
+    </section>
+
+    <section id="revenue" aria-labelledby="revenue-title">
+      <div class="section-head">
+        <h2 id="revenue-title">Revenue performance</h2>
+        <p>Monthly movement, then region, then product. Completed orders only.</p>
+      </div>
+      <div class="grid-2">
+        <article class="card">
+          <h3>Monthly revenue and profit</h3>
+          <p class="note">Each pair is one month in the current filter. Change versus the prior month is calculated only when that prior month is included.</p>
+          <div class="chart-box">
+            <canvas id="chart-month" aria-label="Monthly recognised revenue and gross profit"></canvas>
+            <p id="chart-month-empty" class="chart-empty" data-empty="No completed orders in this view." hidden>No completed orders in this view.</p>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <caption class="note">Monthly recognised performance. The chart axis is abbreviated. This table is in full shillings.</caption>
+              <thead>
+                <tr>
+                  <th scope="col">Month</th>
+                  <th scope="col" class="num">Completed</th>
+                  <th scope="col" class="num">Returned</th>
+                  <th scope="col" class="num">Cancelled</th>
+                  <th scope="col" class="num">Units sold</th>
+                  <th scope="col" class="num">Revenue</th>
+                  <th scope="col" class="num">Profit</th>
+                  <th scope="col" class="num">Margin</th>
+                  <th scope="col" class="num">Versus prior month</th>
+                </tr>
+              </thead>
+              <tbody id="month-body"></tbody>
+            </table>
+          </div>
+        </article>
+        <article class="card">
+          <h3>Revenue by region</h3>
+          <p class="note">Recognised revenue. The comparison table in the next section adds profit, margin and leakage.</p>
+          <div class="chart-box">
+            <canvas id="chart-region" aria-label="Recognised revenue by region"></canvas>
+            <p id="chart-region-empty" class="chart-empty" data-empty="No completed orders in this view." hidden>No completed orders in this view.</p>
+          </div>
+        </article>
+      </div>
+      <article class="card">
+        <h3>Revenue by product</h3>
+        <p class="note">Recognised revenue for each product allowed by the category and product filters, including a product with no completed sales in this view.</p>
+        <div class="chart-box chart-box-short">
+          <canvas id="chart-product-revenue" aria-label="Recognised revenue by product"></canvas>
+          <p id="chart-product-revenue-empty" class="chart-empty" data-empty="No completed orders in this view." hidden>No completed orders in this view.</p>
+        </div>
+      </article>
+    </section>
+
+    <section id="performance" aria-labelledby="performance-title">
+      <div class="section-head">
+        <h2 id="performance-title">Business performance</h2>
+        <p>Region, product profit, category, customer type and order status. Same filters as the cards above.</p>
+      </div>
+
+      <article class="card">
+        <h3>Regional performance</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Region</th>
+                <th scope="col" class="num">Completed</th>
+                <th scope="col" class="num">Returned</th>
+                <th scope="col" class="num">Cancelled</th>
+                <th scope="col" class="num">Units sold</th>
+                <th scope="col" class="num">Revenue</th>
+                <th scope="col" class="num">Share</th>
+                <th scope="col" class="num">Profit</th>
+                <th scope="col" class="num">Margin</th>
+                <th scope="col" class="num">AOV</th>
+              </tr>
+            </thead>
+            <tbody id="region-body"></tbody>
+          </table>
+        </div>
+        <p class="note">Share is the region’s recognised revenue divided by recognised revenue in this view. Unit price and unit cost do not vary by city, so a margin gap is product mix.</p>
+      </article>
+
+      <div class="grid-2 even">
+        <article class="card">
+          <h3>Product profitability</h3>
+          <p class="note">Gross profit on completed orders. Margin sits in the table, because profit and margin answer different questions.</p>
+          <div class="chart-box">
+            <canvas id="chart-product-profit" aria-label="Gross profit by product"></canvas>
+            <p id="chart-product-profit-empty" class="chart-empty" data-empty="No completed orders in this view." hidden>No completed orders in this view.</p>
+          </div>
+        </article>
+        <article class="card">
+          <h3>Category contribution</h3>
+          <p class="note">Share of recognised revenue.</p>
+          <div class="chart-box">
+            <canvas id="chart-category" aria-label="Recognised revenue by category"></canvas>
+            <p id="chart-category-empty" class="chart-empty" data-empty="No completed orders in this view." hidden>No completed orders in this view.</p>
+          </div>
+          <p id="category-summary" class="note"></p>
+        </article>
+      </div>
+
+      <article class="card">
+        <h3>Product detail</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Product</th>
+                <th scope="col">Category</th>
+                <th scope="col" class="num">Completed</th>
+                <th scope="col" class="num">Units sold</th>
+                <th scope="col" class="num">Revenue</th>
+                <th scope="col" class="num">Profit</th>
+                <th scope="col" class="num">Margin</th>
+                <th scope="col" class="num">Returned</th>
+                <th scope="col" class="num">Cancelled</th>
+              </tr>
+            </thead>
+            <tbody id="product-body"></tbody>
+          </table>
+        </div>
+        <p class="note">Margin is recognised gross profit divided by recognised revenue. For every product in this file, unit price and unit cost are the same on every row.</p>
+      </article>
+
+      <div class="grid-2 even">
+        <article class="card">
+          <h3>New and returning orders</h3>
+          <p class="note">Recognised revenue by the customer-type flag on the order. This is not a count of people.</p>
+          <div class="chart-box">
+            <canvas id="chart-customer" aria-label="Recognised revenue for new and returning orders"></canvas>
+            <p id="chart-customer-empty" class="chart-empty" data-empty="No completed orders in this view." hidden>No completed orders in this view.</p>
+          </div>
+        </article>
+        <article class="card">
+          <h3>Order status</h3>
+          <p class="note">Every order in the view, not only completed sales.</p>
+          <div class="chart-box">
+            <canvas id="chart-status" aria-label="Order count by status"></canvas>
+            <p id="chart-status-empty" class="chart-empty" data-empty="No orders in this view." hidden>No orders in this view.</p>
+          </div>
+          <p id="status-summary" class="note"></p>
+        </article>
+      </div>
+
+      <article class="card">
+        <h3>Customer-type comparison</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Customer type</th>
+                <th scope="col" class="num">Completed</th>
+                <th scope="col" class="num">Units sold</th>
+                <th scope="col" class="num">Units per order</th>
+                <th scope="col" class="num">Revenue</th>
+                <th scope="col" class="num">Share</th>
+                <th scope="col" class="num">Profit</th>
+                <th scope="col" class="num">Margin</th>
+                <th scope="col" class="num">AOV</th>
+              </tr>
+            </thead>
+            <tbody id="customer-body"></tbody>
+          </table>
+        </div>
+        <p class="note">Returning is a flag on the order. The file has no customer identifier, so retention and lifetime value cannot be calculated.</p>
+      </article>
+    </section>
+
+    <section id="insights" aria-labelledby="insights-title">
+      <div class="section-head">
+        <h2 id="insights-title">What the file shows</h2>
+        <p id="insight-scope"></p>
+      </div>
+      <div class="insight-grid" id="insight-list"></div>
+    </section>
+
+    <section id="actions" aria-labelledby="actions-title">
+      <div class="section-head">
+        <h2 id="actions-title">Recommendations</h2>
+        <p>Written for the full quarter. They do not change when the filters change. Ordered by what to open first: the repeated leak, the largest cost question, the thinnest region, the planning risk, then the mix test.</p>
+      </div>
+      <ol class="actions">
+        <li class="card">
+          <h3>Review the two phone returns before reordering handsets</h3>
+          <p><span class="tag">Finding</span> The only returned orders are 1006 (Nairobi, 18 January, returning customer, 2 phones, list value KES 60,000, gross profit KES 18,000) and 1022 (Kisumu, 19 March, returning customer, 1 phone, list value KES 30,000, gross profit KES 9,000). That is 2 of 6 phone orders, and 2 of 4 phone orders placed by returning customers. Both phone orders from new customers were completed. No other product was returned. The file has no reason code.</p>
+          <p><span class="tag">Action</span> Read the fault and handover notes on 1006 and 1022 before the next phone purchase. Do not guess the cause from this file. Add a reason code to any future return so the next close can separate a defect from a change of mind.</p>
+        </li>
+        <li class="card">
+          <h3>Keep laptops, and review the KES 55,000 unit cost</h3>
+          <p><span class="tag">Finding</span> Laptops bring in KES 525,000 of revenue, 33.70% of recognised revenue, and KES 140,000 of gross profit, more than any other product. The margin is 26.67%, the lowest of the five products, against a company margin of 31.71%. Unit price is KES 75,000 and unit cost is KES 55,000 in every region and every month.</p>
+          <p><span class="tag">Action</span> Ask procurement to confirm the unit cost and whether a lower cost is available. Do not drop the line to chase a higher margin: it is the main profit pool. A price increase is not supported here. The file has no lost sales and no competitor prices.</p>
+        </li>
+        <li class="card">
+          <h3>Follow up the Nakuru tablet cancellation, and do not cut the city</h3>
+          <p><span class="tag">Finding</span> Nakuru has the lowest recognised revenue, KES 260,000 (16.69%), the lowest gross margin, 30.00%, and the lowest average order value, KES 65,000, from 4 completed orders. It is the only region with a cancellation: order 1014 on 17 February, a new customer, 2 tablets, list value KES 50,000 and unrealised gross profit of KES 16,000. Nakuru completed no tablet and no office chair in the quarter.</p>
+          <p><span class="tag">Action</span> Find out why 1014 was cancelled, including whether the stock was available. Four completed orders are too few to justify leaving the city, and enough to justify a stock and follow-up check.</p>
+        </li>
+        <li class="card">
+          <h3>Explain March before using it as the run-rate</h3>
+          <p><span class="tag">Finding</span> Recognised revenue went from KES 484,000 in January to KES 460,000 in February, a fall of 4.96%, then to KES 614,000 in March, a rise of 33.48% on February. February had 6 completed orders, the fewest, and it contains the only cancellation. March had 8 completed orders and the highest profit, KES 194,000, and it also contains one phone return.</p>
+          <p><span class="tag">Action</span> Match February and March to staffing, stock and any campaign records before setting the second-quarter buy. Those causes are not in this file. Do not plan the next quarter as if March repeats, and do not treat February as a collapse in demand.</p>
+        </li>
+        <li class="card">
+          <h3>Offer furniture with electronics in Nairobi</h3>
+          <p><span class="tag">Finding</span> Furniture earned a 38.84% gross margin and 35.22% of gross profit from 28.75% of recognised revenue. All 8 furniture orders were completed. Electronics earned a 28.83% margin and produced both returns and the cancellation. Of Nairobi recognised revenue of KES 612,000, KES 470,000 was electronics and KES 142,000 was furniture.</p>
+          <p><span class="tag">Action</span> In Nairobi, offer a desk or a chair with a laptop or a phone, and record whether the attachment is accepted. The margin gap is in this file. Acceptance is not. Run it as a tracked test, not as a permanent assortment change.</p>
+        </li>
+      </ol>
+    </section>
+
+    <section id="ledger" aria-labelledby="ledger-title">
+      <div class="section-head">
+        <h2 id="ledger-title">Order ledger</h2>
+        <p id="ledger-caption"></p>
+      </div>
+      <article class="card">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Order</th>
+                <th scope="col">Date</th>
+                <th scope="col">Region</th>
+                <th scope="col">Product</th>
+                <th scope="col">Customer</th>
+                <th scope="col" class="num">Units</th>
+                <th scope="col" class="num">List value</th>
+                <th scope="col" class="num">Recognised revenue</th>
+                <th scope="col" class="num">Recognised profit</th>
+                <th scope="col">Status</th>
+              </tr>
+            </thead>
+            <tbody id="ledger-body"></tbody>
+            <tfoot>
+              <tr>
+                <th colspan="5" scope="row">Totals in this view</th>
+                <td class="num" id="ledger-units"></td>
+                <td class="num" id="ledger-list"></td>
+                <td class="num" id="ledger-revenue"></td>
+                <td class="num" id="ledger-profit"></td>
+                <td></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+        <p class="note">The units total and the list value add every row in the view, whatever the status. Recognised revenue and recognised profit count completed orders only. A returned or cancelled row shows KES 0 in those two columns. Units sold on the cards above are the completed units, not this units total.</p>
+      </article>
+    </section>
+
+    <footer class="site-footer">
+      <p>Source file: order IDs 1001–1024, 24 rows, none dropped. Analysis date 9 Nov 2026. The sales file ends on 25 Mar 2026.</p>
+      <p>Gross profit is product margin only. Tax, freight, discounts and overhead are not in the file, so this is not net profit.</p>
+      <p>
+        <a href="docs/BUSINESS_ANALYTICS_REPORT.md">Business analytics report</a>
+        · <a href="docs/DATA_QUALITY_AND_PREPARATION.md">Data quality and preparation</a>
+        · <a href="docs/KPI_CALCULATION_REFERENCE.md">KPI calculation reference</a>
+        · <a href="docs/TESTING_AND_VALIDATION.md">Testing and validation</a>
+      </p>
+    </footer>
+  </div>
+
+  <noscript>
+    <p class="banner">This dashboard calculates its figures in JavaScript. Enable JavaScript to see the cards, filters and charts.</p>
+  </noscript>
+  <script src="vendor/chart.umd.min.js"></script>
+  <script src="script.js?v=2"></script>
+</body>
+</html>

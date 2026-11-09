@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Executive retail analytics for Kenyan multi-region sales, 5 Jan–25 Mar 2026." />
+  <title>Retail Executive Analytics · Q1 2026</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Sora:wght@500;600;700&family=Source+Sans+3:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to dashboard</a>
+
+  <header class="site-header">
+    <div class="shell header-inner">
+      <div class="brand">
+        <p class="eyebrow">Kenya retail · four cities</p>
+        <h1>Branch ledger</h1>
+        <p class="lede">Recognised sales, gross profit and exceptions across Nairobi, Mombasa, Kisumu and Nakuru.</p>
+        <p class="meta">
+          <span><strong>Period</strong> 5 Jan 2026 – 25 Mar 2026</span>
+          <span aria-hidden="true">·</span>
+          <span><strong>Source close</strong> 25 Mar 2026</span>
+          <span aria-hidden="true">·</span>
+          <span id="last-updated"></span>
+        </p>
+      </div>
+      <div class="header-tools">
+        <button type="button" id="theme-toggle" class="theme-toggle" aria-pressed="false" aria-label="Switch to dark mode">
+          <span class="theme-toggle-mark" aria-hidden="true"></span>
+          <span id="theme-label">Dark mode</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="filter-bar" role="search" aria-label="Dashboard filters">
+    <form id="filter-form" class="shell filter-form">
+      <div class="field">
+        <label for="filter-month">Month</label>
+        <select id="filter-month" name="month">
+          <option value="all">All months</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="filter-region">Region</label>
+        <select id="filter-region" name="region">
+          <option value="all">All regions</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="filter-category">Category</label>
+        <select id="filter-category" name="category">
+          <option value="all">All categories</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="filter-product">Product</label>
+        <select id="filter-product" name="product">
+          <option value="all">All products</option>
+        </select>
+      </div>
+      <div class="field field-reset">
+        <button type="button" id="reset-filters" class="btn-reset">Clear filters</button>
+      </div>
+      <p id="filter-summary" class="filter-summary" role="status"></p>
+    </form>
+  </div>
+
+  <main id="main" class="shell">
+    <section class="city-ledger" aria-labelledby="ledger-heading">
+      <div class="section-head">
+        <h2 id="ledger-heading">City cash position</h2>
+        <p>Recognised revenue from completed orders, with each city’s share of the filtered total.</p>
+      </div>
+      <div id="city-ledger" class="ledger-grid"></div>
+    </section>
+
+    <section class="kpi-section" aria-labelledby="kpi-heading">
+      <h2 id="kpi-heading" class="section-title">Key metrics</h2>
+      <p class="calc-note">Revenue, profit, units and AOV use completed orders only. Returns and cancellations are counted separately.</p>
+      <div id="kpi-grid" class="kpi-grid"></div>
+    </section>
+
+    <section class="chart-section" aria-labelledby="revenue-heading">
+      <h2 id="revenue-heading" class="section-title">Revenue performance</h2>
+      <div class="chart-grid chart-grid-2">
+        <article class="panel">
+          <h3>Monthly revenue</h3>
+          <div class="chart-wrap">
+            <canvas id="chart-monthly-revenue" aria-label="Monthly revenue from completed orders"></canvas>
+            <p class="chart-empty" hidden>No completed orders in this view.</p>
+          </div>
+        </article>
+        <article class="panel">
+          <h3>Monthly gross profit</h3>
+          <div class="chart-wrap">
+            <canvas id="chart-monthly-profit" aria-label="Monthly gross profit from completed orders"></canvas>
+            <p class="chart-empty" hidden>No completed orders in this view.</p>
+          </div>
+        </article>
+        <article class="panel">
+          <h3>Revenue by region</h3>
+          <div class="chart-wrap">
+            <canvas id="chart-revenue-region" aria-label="Revenue by region"></canvas>
+            <p class="chart-empty" hidden>No completed orders in this view.</p>
+          </div>
+        </article>
+        <article class="panel">
+          <h3>Revenue by product</h3>
+          <div class="chart-wrap">
+            <canvas id="chart-revenue-product" aria-label="Revenue by product"></canvas>
+            <p class="chart-empty" hidden>No completed orders in this view.</p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="chart-section" aria-labelledby="performance-heading">
+      <h2 id="performance-heading" class="section-title">Business performance</h2>
+      <div class="chart-grid chart-grid-3">
+        <article class="panel">
+          <h3>Regional revenue and profit</h3>
+          <div class="chart-wrap">
+            <canvas id="chart-regional-compare" aria-label="Regional revenue compared with gross profit"></canvas>
+            <p class="chart-empty" hidden>No completed orders in this view.</p>
+          </div>
+        </article>
+        <article class="panel">
+          <h3>Product profitability</h3>
+          <div class="chart-wrap">
+            <canvas id="chart-product-profit" aria-label="Gross profit by product"></canvas>
+            <p class="chart-empty" hidden>No completed orders in this view.</p>
+          </div>
+        </article>
+        <article class="panel">
+          <h3>Category contribution</h3>
+          <div class="chart-wrap chart-wrap-doughnut">
+            <canvas id="chart-category" aria-label="Revenue share by category"></canvas>
+            <p class="chart-empty" hidden>No completed orders in this view.</p>
+          </div>
+        </article>
+        <article class="panel">
+          <h3>New vs returning orders</h3>
+          <div class="chart-wrap">
+            <canvas id="chart-customer" aria-label="Revenue from new versus returning labelled orders"></canvas>
+            <p class="chart-empty" hidden>No completed orders in this view.</p>
+          </div>
+        </article>
+        <article class="panel">
+          <h3>Order status</h3>
+          <div class="chart-wrap chart-wrap-doughnut">
+            <canvas id="chart-status" aria-label="Count of completed, returned and cancelled orders"></canvas>
+            <p class="chart-empty" hidden>No orders in this view.</p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="copy-section" aria-labelledby="insights-heading">
+      <h2 id="insights-heading" class="section-title">Insights</h2>
+      <p class="calc-note">Generated from the current filter set. These are observations from the 24-row file, not forecasts.</p>
+      <ul id="insights-list" class="insight-list"></ul>
+    </section>
+
+    <section class="copy-section" aria-labelledby="rec-heading">
+      <h2 id="rec-heading" class="section-title">Recommendations</h2>
+      <p class="calc-note">Fixed to the full Q1 file so they do not drift when filters change. Each item cites a finding.</p>
+      <ol class="rec-list">
+        <li>
+          <h3>Review phone quality in Nairobi and Kisumu</h3>
+          <p><strong>Finding.</strong> Orders 1006 and 1022 are the only returns. Both are phones sold to returning customers — 2 of 6 phone orders (33%). Reversed list value is KES 90,000.</p>
+          <p><strong>Do.</strong> Inspect phone fulfilment and after-sales in those two cities and start recording return reasons. The rest of the range had 0 of 18 orders returned.</p>
+        </li>
+        <li>
+          <h3>Recover Nakuru’s cancelled tablet and list chairs</h3>
+          <p><strong>Finding.</strong> Nakuru is last on revenue (KES 260,000, 16.69%) and AOV (KES 65,000). Order 1014 cancelled KES 50,000 of tablets. No completed tablets and no office chairs in Nakuru.</p>
+          <p><strong>Do.</strong> Follow up that February cancellation and trial office chairs, the highest-margin SKU (41.67%) elsewhere.</p>
+        </li>
+        <li>
+          <h3>Attach furniture to lift blended margin</h3>
+          <p><strong>Finding.</strong> Furniture margin is 38.84% versus 28.83% on electronics. Chairs lead units (14) and unit margin, but are only 10.78% of revenue.</p>
+          <p><strong>Do.</strong> Bundle desk + chair in cities that already sell both. Keep electronics listed; this is mix, not a category exit.</p>
+        </li>
+        <li>
+          <h3>Treat laptops as a margin project, not a volume cut</h3>
+          <p><strong>Finding.</strong> Laptops are 33.70% of revenue (KES 525,000) at the thinnest unit margin (26.67%). February’s revenue dip tracks laptop units falling from 3 to 1.</p>
+          <p><strong>Do.</strong> Work unit cost and attach a chair or desk on laptop tickets. Keep stock: March recovered when laptop units returned to 3.</p>
+        </li>
+        <li>
+          <h3>Copy Mombasa completion and staff a March-like mix</h3>
+          <p><strong>Finding.</strong> Mombasa completed 5 of 5 orders across all five SKUs. March revenue rose 33.48% to KES 614,000; laptops plus desks were KES 400,000 of that month.</p>
+          <p><strong>Do.</strong> Standardise Mombasa’s pick-and-confirm steps in the cities that returned or cancelled, and align inventory to laptops and desks for high-volume weeks.</p>
+        </li>
+      </ol>
+    </section>
+
+    <section class="copy-section" aria-labelledby="exceptions-heading">
+      <h2 id="exceptions-heading" class="section-title">Exceptions</h2>
+      <p class="calc-note">Returned and cancelled orders in the current filter. They are excluded from revenue KPIs.</p>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th scope="col">Order</th>
+              <th scope="col">Date</th>
+              <th scope="col">Region</th>
+              <th scope="col">Product</th>
+              <th scope="col">Customer</th>
+              <th scope="col">Units</th>
+              <th scope="col">List value</th>
+              <th scope="col">Status</th>
+            </tr>
+          </thead>
+          <tbody id="exceptions-body"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="shell">
+      <p>Recognised sales = completed orders only. Profit is product gross profit (price − cost). Customer type is an order label, not a person ID — retention and LTV are not calculated. March figures run through 25 Mar 2026.</p>
+    </div>
+  </footer>
+</body>
+</html>
